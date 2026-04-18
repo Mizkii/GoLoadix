@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mizkii.github.io/GoLoadix/sitemap.xml
