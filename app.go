@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -282,10 +283,19 @@ func (a *App) StartDownload(req StartDownloadRequest) (*Download, error) {
 
 	a.mu.Lock()
 	a.downloads[id] = d
+	active := 0
+	for _, dl := range a.downloads {
+		if dl.Status == StatusDownloading {
+			active++
+		}
+	}
+	maxDl := a.settings.MaxDownloads
 	a.mu.Unlock()
 
 	go a.saveSession()
-	go a.runDownload(d)
+	if active < maxDl {
+		go a.runDownload(d)
+	}
 	return d, nil
 }
 
@@ -311,17 +321,29 @@ func (a *App) PauseDownload(id string) error {
 }
 
 func (a *App) ResumeDownload(id string) error {
-	a.mu.RLock()
+	a.mu.Lock()
 	d, ok := a.downloads[id]
-	a.mu.RUnlock()
 	if !ok {
+		a.mu.Unlock()
 		return fmt.Errorf("download not found")
 	}
 	if d.Status != StatusPaused && d.Status != StatusError {
+		a.mu.Unlock()
 		return nil
 	}
 	d.Status = StatusQueued
-	go a.runDownload(d)
+	active := 0
+	for _, dl := range a.downloads {
+		if dl.Status == StatusDownloading {
+			active++
+		}
+	}
+	maxDl := a.settings.MaxDownloads
+	a.mu.Unlock()
+
+	if active < maxDl {
+		go a.runDownload(d)
+	}
 	return nil
 }
 
@@ -342,7 +364,36 @@ func (a *App) CancelDownload(id string) error {
 	}
 	_ = os.Remove(d.SavePath)
 	go a.saveSession()
+	go a.maybeStartQueued()
 	return nil
+}
+
+// maybeStartQueued starts queued downloads up to the MaxDownloads limit.
+func (a *App) maybeStartQueued() {
+	a.mu.RLock()
+	active := 0
+	var queued []*Download
+	for _, d := range a.downloads {
+		if d.Status == StatusDownloading {
+			active++
+		} else if d.Status == StatusQueued {
+			queued = append(queued, d)
+		}
+	}
+	maxDl := a.settings.MaxDownloads
+	a.mu.RUnlock()
+
+	sort.Slice(queued, func(i, j int) bool {
+		return queued[i].StartedAt.Before(queued[j].StartedAt)
+	})
+
+	for _, d := range queued {
+		if active >= maxDl {
+			break
+		}
+		active++
+		go a.runDownload(d)
+	}
 }
 
 func (a *App) runDownload(d *Download) {
@@ -354,7 +405,10 @@ func (a *App) runDownload(d *Download) {
 	d.Error = ""
 	a.mu.Unlock()
 
-	defer cancel()
+	defer func() {
+		cancel()
+		go a.maybeStartQueued()
+	}()
 
 	if err := a.download(ctx, d); err != nil {
 		a.mu.Lock()

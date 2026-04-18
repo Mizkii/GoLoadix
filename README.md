@@ -6,6 +6,8 @@ GoLoadix is a fast, lightweight, open source download manager for Windows built 
 
 > Free download accelerator · Multi-threaded downloader · IDM alternative · Open source · No ads · No bloatware
 
+![GoLoadix active download queue](screenshots/Active_Queuejpg.jpg)
+
 ---
 
 ## Features

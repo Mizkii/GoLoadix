@@ -17,11 +17,15 @@
   <meta property="og:description" content="Multi-part parallel downloads, pause &amp; resume, portable .exe. A clean IDM alternative with no ads and no bloatware." />
   <meta property="og:url" content="https://mizkii.github.io/GoLoadix/" />
   <meta property="og:site_name" content="GoLoadix" />
+  <meta property="og:image" content="https://mizkii.github.io/GoLoadix/screenshots/Active_Queuejpg.jpg" />
+  <meta property="og:image:width" content="1262" />
+  <meta property="og:image:height" content="807" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="GoLoadix — Free Open Source Download Manager for Windows" />
   <meta name="twitter:description" content="Multi-part parallel downloads, pause &amp; resume, portable .exe. Free and open source." />
+  <meta name="twitter:image" content="https://mizkii.github.io/GoLoadix/screenshots/Active_Queuejpg.jpg" />
 
   <!-- Structured Data: SoftwareApplication -->
   <script type="application/ld+json">
@@ -37,7 +41,7 @@
       "priceCurrency": "USD"
     },
     "description": "GoLoadix is a free, open source download manager for Windows. It accelerates downloads using parallel TCP connections and HTTP Range requests — a lightweight alternative to IDM with no ads and no bloatware.",
-    "softwareVersion": "1.0.0",
+    "softwareVersion": "1.0.1",
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://github.com/Mizkii/GoLoadix",
     "downloadUrl": "https://github.com/Mizkii/GoLoadix/releases/latest"
@@ -187,6 +191,42 @@
     .step-body h4 { font-weight: 700; margin-bottom: .2rem; }
     .step-body p { font-size: .88rem; color: var(--muted); }
 
+    /* Screenshots */
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .screenshot-item {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .screenshot-item:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.5); }
+    .screenshot-item img { width: 100%; height: auto; display: block; }
+    .screenshot-label { padding: .6rem 1rem; font-size: .82rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* Lightbox */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 10px; box-shadow: 0 32px 80px rgba(0,0,0,.6); }
+    .lightbox-close {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      background: rgba(255,255,255,.1); border: none; color: #fff;
+      width: 2.5rem; height: 2.5rem; border-radius: 50%; font-size: 1.2rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,.2); }
+
     /* Download CTA */
     .download-section {
       text-align: center;
@@ -219,6 +259,7 @@
   <span class="nav-logo">GoLoadix</span>
   <div class="nav-links">
     <a href="#features">Features</a>
+    <a href="#screenshots">Screenshots</a>
     <a href="#how-it-works">How it works</a>
     <a href="#compare">Compare</a>
     <a href="https://github.com/Mizkii/GoLoadix" rel="noopener">GitHub</a>
@@ -277,6 +318,36 @@
     </div>
   </div>
 </section>
+
+<!-- Screenshots -->
+<section class="section" id="screenshots">
+  <h2 class="section-title">See it in action</h2>
+  <p class="section-sub">Click any screenshot to enlarge.</p>
+  <div class="screenshots">
+    <div class="screenshot-item" onclick="openLightbox('screenshots/Active_Queuejpg.jpg')">
+      <img src="screenshots/Active_Queuejpg.jpg" alt="GoLoadix active download queue with parallel connections" loading="lazy" />
+      <div class="screenshot-label">Active Queue</div>
+    </div>
+    <div class="screenshot-item" onclick="openLightbox('screenshots/Completed.jpg')">
+      <img src="screenshots/Completed.jpg" alt="GoLoadix completed downloads list" loading="lazy" />
+      <div class="screenshot-label">Completed Downloads</div>
+    </div>
+    <div class="screenshot-item" onclick="openLightbox('screenshots/Settings_General.jpg')">
+      <img src="screenshots/Settings_General.jpg" alt="GoLoadix general settings panel" loading="lazy" />
+      <div class="screenshot-label">General Settings</div>
+    </div>
+    <div class="screenshot-item" onclick="openLightbox('screenshots/Settings_Network.jpg')">
+      <img src="screenshots/Settings_Network.jpg" alt="GoLoadix network settings panel" loading="lazy" />
+      <div class="screenshot-label">Network Settings</div>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="Screenshot" />
+</div>
 
 <!-- How it works -->
 <section class="section" id="how-it-works">
@@ -416,5 +487,16 @@
   <p style="margin-top:.5rem">GoLoadix — Free open source download manager for Windows</p>
 </footer>
 
+<script>
+  function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+</script>
 </body>
 </html>

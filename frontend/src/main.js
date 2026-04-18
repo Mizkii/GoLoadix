@@ -128,10 +128,14 @@ function patchCard(el, d) {
   const connEl = el.querySelector('.card-connections');
   if (connEl) connEl.textContent = `${d.activeConnections || 0}/${d.connections} conn.`;
 
-  // If global dropdown is showing this card's data, refresh it live
+  // If global dropdown is showing this card's data, refresh it live or hide if no longer downloading
   const ddEl = document.getElementById('conn-speed-dropdown');
   if (!ddEl.classList.contains('hidden') && ddEl.dataset.cardId === d.id) {
-    document.getElementById('conn-speed-dropdown-list').innerHTML = buildConnSpeedList(d);
+    if (d.status === 'Downloading') {
+      document.getElementById('conn-speed-dropdown-list').innerHTML = buildConnSpeedList(d);
+    } else {
+      hideConnDropdown();
+    }
   }
 
   // Status badge — only rebuild when status changes
@@ -254,7 +258,7 @@ function buildCard(d) {
   div.addEventListener('mouseenter', () => {
     clearTimeout(dropdownHideTimer);
     const current = downloads[div.dataset.id];
-    if (current && current.status !== 'Completed') showConnDropdown(div, current);
+    if (current && current.status === 'Downloading') showConnDropdown(div, current);
   });
   div.addEventListener('mouseleave', scheduleHideDropdown);
 
