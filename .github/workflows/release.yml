@@ -26,17 +26,28 @@ jobs:
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.9.1
 
       - name: Install NSIS
-        run: choco install nsis --yes --no-progress
+        run: choco install nsis --yes --no-progress --ignore-checksums
+        shell: pwsh
+
+      - name: Add NSIS to PATH
+        run: echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Download WebView2 bootstrapper
+        run: |
+          New-Item -ItemType Directory -Force -Path build/windows/installer/tmp | Out-Null
+          Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "build/windows/installer/tmp/MicrosoftEdgeWebview2Setup.exe"
         shell: pwsh
 
       - name: Build
-        run: |
-          $env:PATH = "C:\Program Files (x86)\NSIS;$env:PATH"
-          wails build -nsis
+        run: wails build -nsis
         shell: pwsh
 
-      - name: List build output
-        run: Get-ChildItem build/bin/
+      - name: Verify build output
+        run: |
+          Get-ChildItem build/bin/
+          if (-not (Test-Path "build/bin/GoLoadix.exe")) { Write-Error "Portable exe not found!"; exit 1 }
+          if (-not (Test-Path "build/bin/GoLoadix-amd64-installer.exe")) { Write-Error "Installer not found!"; exit 1 }
         shell: pwsh
 
       - name: Upload Release Assets
@@ -44,6 +55,7 @@ jobs:
         with:
           name: GoLoadix ${{ github.ref_name }}
           generate_release_notes: true
+          fail_on_unmatched_files: true
           files: |
             build/bin/GoLoadix.exe
             build/bin/GoLoadix-amd64-installer.exe
